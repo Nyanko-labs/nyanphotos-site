@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NyanPhotos</title>
+<meta name="description" content="NyanPhotos sorts your Apple Photos library by what the pictures are, on your Mac, without uploading anything.">
+<link rel="icon" href="logo.png">
+<style>
+  :root {
+    --night: #0C1590; --dusk: #3B45D6; --violet: #7B61FF; --sky: #5FAEFB;
+    --pink: #C43BAE; --blush: #FC7DDE; --moon: #F5F2FF; --mist: #B9BDF0;
+    --ink: #14163A; --ink-2: #4A4D78; --ground: #FBFAFF; --panel: #F1EFFF; --rule: #E2DFFA;
+    --display: ui-serif, "New York", "Iowan Old Style", "Palatino", Georgia, serif;
+    --body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--ground); }
+  body { margin: 0; font: 16px/1.5 var(--body); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  a { color: var(--violet); }
+  code { font: 0.92em ui-monospace, "SF Mono", Menlo, monospace; background: var(--panel); padding: 1px 5px; border-radius: 4px; }
+  pre { background: var(--night); color: var(--moon); padding: 14px 16px; border-radius: 10px; overflow-x: auto; font: 14px/1.5 ui-monospace, "SF Mono", Menlo, monospace; }
+  pre code { background: none; padding: 0; color: inherit; font: inherit; }
+
+  .hero { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; min-height: 560px; }
+  .band {
+    position: relative; overflow: hidden; display: grid; place-items: center; padding: 40px;
+    background: linear-gradient(35deg, var(--night) 0%, #2A2BC0 40%, var(--violet) 72%, var(--sky) 100%);
+  }
+  .band::before {
+    content: ""; position: absolute; width: 420px; height: 420px; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(252,125,222,0.55), rgba(252,125,222,0));
+    filter: blur(10px);
+  }
+  .band img { position: relative; width: 240px; height: 240px; filter: drop-shadow(0 18px 40px rgba(12,21,144,0.5)); }
+  .pitch { padding: 64px 56px 48px; max-width: 640px; align-self: center; }
+  .pitch h1 { font: 500 44px/1.1 var(--display); letter-spacing: -0.01em; margin: 0 0 16px; }
+  .pitch p.lede { font-size: 18px; color: var(--ink-2); margin: 0 0 28px; max-width: 34em; }
+  .promises { list-style: none; padding: 0; margin: 0 0 32px; display: grid; gap: 10px; }
+  .promises li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; max-width: 36em; }
+  .promises svg { width: 20px; height: 20px; color: var(--violet); margin-top: 3px; }
+
+  .download { display: inline-flex; align-items: center; gap: 10px; background: var(--pink); color: var(--moon);
+    text-decoration: none; font-weight: 600; font-size: 17px; padding: 12px 22px; border-radius: 999px;
+    box-shadow: 0 8px 24px rgba(196,59,174,0.35); }
+  .download:hover { background: #B0339C; }
+  .download:focus-visible, a:focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
+  .download svg { width: 18px; height: 18px; }
+  .facts { margin: 14px 0 0; color: var(--ink-2); font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+  .facts span { white-space: nowrap; }
+
+  main { max-width: 1020px; margin: 0 auto; padding: 24px 32px 64px; }
+  section { padding: 36px 0; border-top: 1px solid var(--rule); }
+  h2 { font: 500 28px/1.2 var(--display); margin: 0 0 18px; }
+  h3 { font: 600 16px/1.3 var(--body); margin: 0 0 6px; }
+  p { max-width: 42em; }
+
+  .finds { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .finds li { background: var(--panel); border-radius: 12px; padding: 14px 16px 14px 20px; position: relative; }
+  .finds li::before { content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 4px; border-radius: 4px; background: var(--stripe); }
+  .finds li p { margin: 0; color: var(--ink-2); font-size: 15px; }
+  .legend { color: var(--ink-2); font-size: 14px; margin-top: 14px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin: 0 4px 0 12px; }
+
+  figure { margin: 0; }
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .shots img { width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--rule); box-shadow: 0 10px 30px rgba(12,21,144,0.10); }
+  figcaption { font-size: 14px; color: var(--ink-2); margin-top: 8px; }
+
+  ol.steps { padding-left: 1.3em; max-width: 44em; }
+  ol.steps li { margin-bottom: 10px; }
+  .note { background: var(--panel); border-radius: 12px; padding: 14px 18px; max-width: 44em; }
+  .note p { margin: 0; }
+  footer { border-top: 1px solid var(--rule); padding: 24px 0 0; color: var(--ink-2); font-size: 14px; }
+  footer p { margin: 4px 0; }
+  .sha { word-break: break-all; }
+
+  @media (max-width: 760px) {
+    .hero { grid-template-columns: 1fr; min-height: 0; }
+    .band { padding: 40px 24px; }
+    .band img { width: 160px; height: 160px; }
+    .pitch { padding: 32px 24px 8px; }
+    .pitch h1 { font-size: 34px; }
+    main { padding: 8px 24px 48px; }
+    .shots { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .band img { animation: settle 900ms ease-out both; }
+    @keyframes settle { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="band" aria-hidden="true"><img src="logo.png" alt=""></div>
+  <div class="pitch">
+    <h1>Your photos, sorted by what they are.</h1>
+    <p class="lede">NyanPhotos reads your Apple Photos library and builds smart collections: photos, illustrations, screenshots, documents, tiny files, duplicates, visually similar images. It works beside Photos, never instead of it.</p>
+    <ul class="promises">
+      <li><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="14" height="10" rx="2"/><path d="M7 15v2h6v-2"/></svg><span>Everything runs on this Mac. Nothing about your photos is uploaded, and iCloud originals are never downloaded.</span></li>
+      <li><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 3h7l3 3v11H5z"/><path d="M12 3v3h3"/></svg><span>Originals stay in Photos. NyanPhotos keeps references, sizes, dates, and labels.</span></li>
+      <li><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10.5l4 4 8-9"/></svg><span>Nothing changes until you confirm it on a screen that says exactly what will happen.</span></li>
+    </ul>
+    <a class="download" href="https://github.com/Nyanko-labs/nyanphotos-site/releases/download/v1.0-beta38/NyanPhotos-1.0-beta38-1211a04.zip">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3v10m0 0l-4-4m4 4l4-4"/><path d="M4 16h12"/></svg>
+      Download NyanPhotos 1.0 beta
+    </a>
+    <p class="facts"><span>Build 38</span><span>3.6 MB zip</span><span>macOS 14 Sonoma or later</span><span>Apple silicon and Intel</span></p>
+  </div>
+</header>
+
+<main>
+  <section id="finds">
+    <h2>What it finds</h2>
+    <ul class="finds">
+      <li style="--stripe: var(--violet)"><h3>Photos, illustrations, screenshots, documents</h3><p>Every image gets one medium and one subject: pets, food, people, scenery, code, receipts. Labels come from Apple's Vision framework on your Mac.</p></li>
+      <li style="--stripe: var(--violet)"><h3>Duplicates and visually similar images</h3><p>Exact copies, near copies, bursts, and re-saved versions of the same picture, with the one to keep marked and the rest one click from selected.</p></li>
+      <li style="--stripe: var(--dusk)"><h3>Tiny files, low resolution, large videos</h3><p>Built-in collections over sizes and dimensions. Unknown sizes are shown as unknown, never as zero.</p></li>
+      <li style="--stripe: var(--pink)"><h3>Your own rules</h3><p>A visual rule editor over dates, dimensions, sizes, and labels with a confidence you set. Every match shows why it is there.</p></li>
+    </ul>
+    <p class="legend">Stripes mean where a rule gets its facts:<i style="background: var(--dusk)"></i>file details<i style="background: var(--violet)"></i>on-device analysis<i style="background: var(--pink)"></i>your rules</p>
+  </section>
+
+  <section id="look">
+    <h2>What it looks like</h2>
+    <div class="shots">
+      <figure><img src="overview.png" alt="The Overview screen: an indexed count on a night-blue band, an on-device analysis panel, and a category list with counts." loading="lazy"><figcaption>Overview, shown here on a small sample library.</figcaption></figure>
+      <figure><img src="duplicates.png" alt="The Duplicates screen: a near-duplicate group with the photo to keep ringed on the left and the copies to its right." loading="lazy"><figcaption>Duplicates, with the copy to keep ringed.</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="install">
+    <h2>Install the beta</h2>
+    <ol class="steps">
+      <li>Download the zip above and unzip it. Drag <strong>NyanPhotos.app</strong> to Applications.</li>
+      <li>This beta is signed to run locally but not notarized, so macOS blocks the first launch. Clear the quarantine flag once in Terminal, or right-click the app and choose Open:
+        <pre><code>xattr -dr com.apple.quarantine /Applications/NyanPhotos.app</code></pre></li>
+      <li>Open it. macOS asks for Photos access; read and write access lets you make albums and delete duplicates later, each after a confirmation.</li>
+      <li>Press <strong>Scan</strong> on Overview, then <strong>Analyze new images</strong> when you want labels and duplicates. Both can be cancelled and resumed, and browsing never waits for them.</li>
+    </ol>
+    <div class="note"><p>Large libraries: indexing 100,000 assets takes a few minutes; analysis runs at a few thousand images an hour and picks up where it left off after a relaunch.</p></div>
+  </section>
+
+  <section id="privacy">
+    <h2>Privacy</h2>
+    <p>NyanPhotos has no network access at all. The app is sandboxed with the Photos entitlement only, so it cannot open a connection even if it wanted to. Its index lives in your user Library and holds references, metadata, labels, preview hashes, and image embeddings, never the pictures themselves. Settings shows the size on disk and can clear it.</p>
+  </section>
+
+  <section id="problems">
+    <h2>Report a problem</h2>
+    <p>Because nothing leaves your Mac, there is no automatic crash reporting. If something goes wrong, open Console.app, filter by <code>org.nyan.NyanPhotos</code>, and send those lines with the version from NyanPhotos › About to <a href="https://github.com/Nyanko-labs/nyanphotos-site/issues">the issue tracker</a>. Crash logs are in <code>~/Library/Logs/DiagnosticReports</code>.</p>
+  </section>
+
+  <footer>
+    <p>NyanPhotos 1.0 beta, build 38. <a href="https://github.com/Nyanko-labs/nyanphotos-site/releases">All releases</a></p>
+    <p class="sha">SHA-256 of the zip: <code>ba55f0b2c7c0806ff37f60733d5aee17971b8f56477d2d848f140a007da7b05c</code></p>
+  </footer>
+</main>
+
+</body>
+</html>
